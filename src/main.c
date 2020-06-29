@@ -1,7 +1,5 @@
-#include <arpa/inet.h>  // inet_addr
 #include <stdio.h>
-#include <stdint.h>
-#include <netinet/in.h> // INADDR_NONE
+#include <stdint.h> // uintXX_t
 #include "arp.h"
 
 int main(int argc, char *argv[]) {
