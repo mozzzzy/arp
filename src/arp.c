@@ -97,6 +97,7 @@ int receive_arp_msg(int sock, struct arp_msg *arp) {
   for(i = 0; i < HW_SIZE_MAC; ++i) {
     arp->target_mac[i] = ((struct arp_msg *)buf)->target_mac[i];
   }
+  return rcv_size;
 }
 
 int ip_char_to_octets(char *ip_char, uint8_t *ip) {
@@ -124,7 +125,7 @@ int arp_request(char *src_interface,
   ret = ip_char_to_octets(sender_ip, sender_ip_octs);
   ret = ip_char_to_octets(target_ip, target_ip_octs);
 
-  struct arp_msg *arp_req = calloc(1, sizeof(struct arp_msg));
+  struct arp_msg *arp_req = (struct arp_msg *)calloc(1, sizeof(struct arp_msg));
   build_arp_request(arp_req,
       sender_mac, sender_ip_octs,
       target_mac, target_ip_octs);
@@ -141,7 +142,7 @@ int arp_request(char *src_interface,
     return send_size;
   }
 
-  struct arp_msg *arp_rsp = calloc(1, sizeof(struct arp_msg));
+  struct arp_msg *arp_rsp = (struct arp_msg *)calloc(1, sizeof(struct arp_msg));
   int rcv_size = receive_arp_msg(sock, arp_rsp);
   if (rcv_size < 1) {
     free(arp_req);
