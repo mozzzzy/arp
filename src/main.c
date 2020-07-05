@@ -18,14 +18,14 @@ int main(int argc, char *argv[]) {
   ret = get_mac_from_ifname(src_interface, src_mac);
   if (ret < 0) {
     printf("failed to resolve mac address from interface name.\n");
-    return -1;
+    return 1;
   }
 
   uint8_t target_mac[6];
   ret = arp_request(src_interface, src_mac, argv[1], target_mac, argv[2]);
   if (ret < 0) {
     printf("failed to resolve mac address from ip address.\n");
-    return -1;
+    return 1;
   }
 
   printf("%s -> %02x:%02x:%02x:%02x:%02x:%02x\n", argv[2],
