@@ -3,6 +3,13 @@
 
 #include <stdint.h>
 
+#define HW_TYPE_ETHERNET   0x0001
+#define PROTOCOL_IPV4      0x0800
+#define HW_SIZE_MAC        0x06
+#define PROTOCOL_SIZE_IPV4 0x04
+#define OPERATION_ARP_REQ  0x0001
+#define OPERATION_ARP_RESP 0x0002
+
 /*
  *  0                   1                   2                   3
  *  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1

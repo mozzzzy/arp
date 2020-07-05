@@ -9,13 +9,6 @@
 #include <unistd.h>           // close
 #include "arp.h"
 
-#define HW_TYPE_ETHERNET   0x0001
-#define PROTOCOL_IPV4      0x0800
-#define HW_SIZE_MAC        0x06
-#define PROTOCOL_SIZE_IPV4 0x04
-#define OPERATION_ARP_REQ  0x0001
-#define OPERATION_ARP_RESP 0x0002
-
 void build_arp_msg(struct arp_msg *arp, uint16_t ope_code,
     uint8_t *sender_mac, uint8_t *sender_ip,
     uint8_t *target_mac, uint8_t *target_ip) {
@@ -42,8 +35,8 @@ void build_arp_msg(struct arp_msg *arp, uint16_t ope_code,
 }
 
 void build_arp_request(struct arp_msg *arp,
-    uint8_t *sender_mac, uint8_t *sender_ip,
-    uint8_t *target_mac, uint8_t *target_ip) {
+    uint8_t *sender_mac, uint8_t *sender_ip, uint8_t *target_ip) {
+  uint8_t target_mac[HW_SIZE_MAC];
   int i = 0;
   for (i = 0; i < HW_SIZE_MAC; ++i) {
     target_mac[i] = 0xff;
@@ -93,10 +86,27 @@ int receive_arp_msg(int sock, struct arp_msg *arp) {
   if (rcv_size < 1) {
     return rcv_size;
   }
+
+  arp->hw_type    = ntohs(((struct arp_msg *)buf)->hw_type);
+  arp->prtcl_type = ntohs(((struct arp_msg *)buf)->prtcl_type);
+  arp->hw_size    = ((struct arp_msg *)buf)->hw_size;
+  arp->prtcl_size = ((struct arp_msg *)buf)->prtcl_size;
+  arp->operation  = htons(((struct arp_msg *)buf)->operation);
+
   int i;
+  for (i = 0; i < HW_SIZE_MAC; ++i) {
+    arp->sender_mac[i] = ((struct arp_msg *)buf)->sender_mac[i];
+  }
+  for (i = 0; i < sizeof(arp->sender_ip)/sizeof(uint8_t); ++i) {
+    arp->sender_ip[i]  = ((struct arp_msg *)buf)->sender_ip[i];
+  }
   for(i = 0; i < HW_SIZE_MAC; ++i) {
     arp->target_mac[i] = ((struct arp_msg *)buf)->target_mac[i];
   }
+  for (i = 0; i < sizeof(arp->target_ip)/sizeof(uint8_t); ++i) {
+    arp->target_ip[i]  = ((struct arp_msg *)buf)->target_ip[i];
+  }
+
   return rcv_size;
 }
 
@@ -111,7 +121,6 @@ int ip_char_to_octets(char *ip_char, uint8_t *ip) {
     uint8_t *ptr = (uint8_t *)&ip_uint32_t+i;
     ip[i] = *ptr;
   }
-  ip = (uint8_t *)&ip_uint32_t;
   return 0;
 }
 
@@ -127,8 +136,7 @@ int arp_request(char *src_interface,
 
   struct arp_msg *arp_req = (struct arp_msg *)calloc(1, sizeof(struct arp_msg));
   build_arp_request(arp_req,
-      sender_mac, sender_ip_octs,
-      target_mac, target_ip_octs);
+      sender_mac, sender_ip_octs, target_ip_octs);
 
   int sock = socket(AF_PACKET, SOCK_DGRAM, htons(ETH_P_ARP));
   if (sock < 0) {
@@ -153,7 +161,7 @@ int arp_request(char *src_interface,
 
   int i;
   for (i = 0; i < HW_SIZE_MAC; ++i) {
-    target_mac[i] = arp_rsp->target_mac[i];
+    target_mac[i] = arp_rsp->sender_mac[i];
   }
   free(arp_req);
   free(arp_rsp);
