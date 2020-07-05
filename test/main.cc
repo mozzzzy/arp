@@ -68,13 +68,15 @@ void ArpTest::build_arp_request_test() {
 }
 
 void ArpTest::ip_char_to_octets_test() {
-  std::string ip_str = "172.17.0.2";
+  const std::string ip_str = "172.17.0.2";
   char ip_char[ip_str.length()];
   strcpy(ip_char, ip_str.c_str());
 
   uint8_t ip[PROTOCOL_SIZE_IPV4];
 
   int ret = ip_char_to_octets(ip_char, ip);
+
+  CPPUNIT_ASSERT(ret == 0);
 
   CPPUNIT_ASSERT(ip[0] == 0xac);
   CPPUNIT_ASSERT(ip[1] == 0x11);
